@@ -129,14 +129,18 @@ startAttendanceButton.addEventListener("click", async () => {
         await audio.play();
         alert(`${selectedCourse} için Hafta ${selectedWeek} yoklaması başlatıldı! Ses dosyası çalınıyor...`);
 
+        // FormData ile ses dosyasını ve diğer bilgileri ekleyin
+        const formData = new FormData();
+        formData.append('course', selectedCourse);
+        formData.append('week', selectedWeek);
+        formData.append('audio', new File([audio], audioFile));
+
         // Sunucuya yoklama bilgisi gönder
         const response = await fetch('http://127.0.0.1:5000/api/attendance', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ course: selectedCourse, week: selectedWeek, audioFile })
+            body: formData
         });
+
         if (!response.ok) {
             throw new Error("Sunucuya yoklama bilgisi gönderilirken bir hata oluştu.");
         }
