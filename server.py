@@ -61,9 +61,10 @@ def get_student_courses(student_id):
 # Yoklama bilgisi ekleme (Öğretmen/Öğrenci)
 @app.route('/api/attendance', methods=['POST'])
 def record_attendance():
-    student_id = request.form.get('studentId')
-    course_name = request.form.get('course')
-    week = request.form.get('week')
+    data = request.form
+    student_id = data.get('studentId')
+    course_name = data.get('course')
+    week = data.get('week')
     audio = request.files.get('audio')
 
     if not (student_id and course_name and week and audio):
@@ -72,6 +73,10 @@ def record_attendance():
     if course_name not in courses:
         return jsonify({"message": "Ders bulunamadı."}), 404
 
+    # Ses dosyasını kaydet
+    audio_filename = f"{course_name}_week{week}_{audio.filename}"
+    audio.save(os.path.join("uploads", audio_filename))
+
     # Simulate audio matching process (replace with real logic)
     match_successful = True  # Bu kısım gerçek ses eşleştirme mantığı ile değiştirilmelidir
 
@@ -79,6 +84,7 @@ def record_attendance():
         "student_id": student_id,
         "course": course_name,
         "week": week,
+        "audioFile": audio_filename,
         "matched": match_successful
     }
     attendance_records.append(attendance_record)
