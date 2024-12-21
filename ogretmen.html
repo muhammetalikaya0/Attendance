@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Öğretmen Arayüzü - Yoklama Sistemi</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+background-color: rgb(255, 242, 184); /* Arka plan rengi */
+color: rgb(20, 113, 33); /* Koyu mavi yerine yeşil renk */
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+margin: 0;
+}
+
+.container {
+background-color: #fff;
+padding: 20px;
+border-radius: 8px;
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+width: 400px;
+}
+
+h1 {
+text-align: center;
+font-size: 24px;
+margin-bottom: 20px;
+color: rgb(20, 113, 33); /* Başlık rengini değiştirdik */
+}
+
+.form-group {
+margin-bottom: 15px;
+}
+
+label {
+display: block;
+font-weight: bold;
+margin-bottom: 5px;
+color: rgb(20, 113, 33); /* Etiket rengi */
+}
+
+input, select, button {
+width: 100%;
+padding: 10px;
+font-size: 16px;
+margin-top: 5px;
+border: 1px solid #ccc;
+border-radius: 4px;
+}
+
+button {
+background-color: rgb(20, 113, 33); /* Koyu mavi yerine yeşil */
+color: white;
+cursor: pointer;
+border: none;
+}
+
+button:hover {
+background-color: #0056b3;
+}
+
+.divider {
+margin: 20px 0;
+height: 1px;
+background-color: #ddd;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Öğretmen Arayüzü</h1>
+
+<!-- Ders Ekleme -->
+<div class="form-group">
+<label for="newCourse">Ders Ekleme:</label>
+<input type="text" id="newCourse" placeholder="Ders adı giriniz">
+</div>
+<button id="addCourse">Ders Ekle</button>
+
+<div class="divider"></div>
+
+<!-- Öğrenci Ekleme -->
+<div class="form-group">
+<label for="courseSelect">Öğrenci Ekleme:</label>
+<select id="courseSelect">
+<option value="">Bir ders seçiniz</option>
+</select>
+</div>
+<div class="form-group">
+<label for="newStudent">Öğrenci Numarası:</label>
+<input type="text" id="newStudent" placeholder="Öğrenci numarası giriniz">
+</div>
+<button id="addStudent">Öğrenci Ekle</button>
+
+<div class="divider"></div>
+
+<!-- Yoklama Başlat -->
+<div class="form-group">
+<label for="attendanceCourse">Yoklama:</label>
+<select id="attendanceCourse">
+<option value="">Bir ders seçiniz</option>
+</select>
+</div>
+
+<!-- Hafta Seçimi -->
+<div class="form-group">
+<label for="weekSelect">Hafta Seçimi:</label>
+<select id="weekSelect">
+<option value="">Bir hafta seçiniz</option>
+<option value="1">Hafta 1</option>
+<option value="2">Hafta 2</option>
+<option value="3">Hafta 3</option>
+<option value="4">Hafta 4</option>
+<option value="5">Hafta 5</option>
+<option value="6">Hafta 6</option>
+<option value="7">Hafta 7</option>
+<option value="8">Hafta 8</option>
+<option value="9">Hafta 9</option>
+<option value="10">Hafta 10</option>
+<option value="11">Hafta 11</option>
+<option value="12">Hafta 12</option>
+<option value="13">Hafta 13</option>
+<option value="14">Hafta 14</option>
+</select>
+</div>
+
+<button id="startAttendance">Yoklama Başlat</button>
+</div>
+
+<!-- JavaScript Dosyasını Bağla -->
+<script src="js/app.js"></script>
+</body>
+</html>
