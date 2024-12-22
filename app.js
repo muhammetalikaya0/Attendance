@@ -14,7 +14,7 @@ const startAttendanceButton = document.getElementById("startAttendance");
 // Sunucuya ders ekleme
 async function addCourseToServer(courseName) {
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/courses', {
+        const response = await fetch('http://10.8.14.27:5000/api/courses', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -60,7 +60,7 @@ addCourseButton.addEventListener("click", async () => {
 // Sunucuya öğrenci ekleme
 async function addStudentToServer(courseName, studentNumber) {
     try {
-        const response = await fetch(`http://127.0.0.1:5000/api/courses/${courseName}/students`, {
+        const response = await fetch(`http://10.8.14.27:5000/api/courses/${courseName}/students`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -136,7 +136,7 @@ startAttendanceButton.addEventListener("click", async () => {
         formData.append('audio', new File([audio], audioFile));
 
         // Sunucuya yoklama bilgisi gönder
-        const response = await fetch('http://127.0.0.1:5000/api/attendance', {
+        const response = await fetch('http://10.8.14.27:5000/api/attendance', {
             method: 'POST',
             body: formData
         });
