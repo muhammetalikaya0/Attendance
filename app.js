@@ -129,19 +129,23 @@ startAttendanceButton.addEventListener("click", async () => {
         await audio.play();
         alert(`${selectedCourse} için Hafta ${selectedWeek} yoklaması başlatıldı! Ses dosyası çalınıyor...`);
 
+        // Ses dosyasını fetch ile yükle
+        const response = await fetch(audioFile);
+        const audioBlob = await response.blob();
+
         // FormData ile ses dosyasını ve diğer bilgileri ekleyin
         const formData = new FormData();
         formData.append('course', selectedCourse);
         formData.append('week', selectedWeek);
-        formData.append('audio', new File([audio], audioFile));
+        formData.append('audio', audioBlob, audioFile);
 
         // Sunucuya yoklama bilgisi gönder
-        const response = await fetch('http://10.8.14.27:5000/api/attendance', {
+        const uploadResponse = await fetch('http://10.8.14.27:5000/api/attendance', {
             method: 'POST',
             body: formData
         });
 
-        if (!response.ok) {
+        if (!uploadResponse.ok) {
             throw new Error("Sunucuya yoklama bilgisi gönderilirken bir hata oluştu.");
         }
         console.log(`Yoklama bilgisi sunucuya gönderildi: ${selectedCourse}, Hafta ${selectedWeek}`);
