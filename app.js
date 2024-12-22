@@ -14,7 +14,7 @@ const startAttendanceButton = document.getElementById("startAttendance");
 // Sunucuya ders ekleme
 async function addCourseToServer(courseName) {
     try {
-        const response = await fetch('http://10.8.14.27:5000/api/courses', {
+        const response = await fetch('https://10.8.1.217:5000/api/courses', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -60,7 +60,7 @@ addCourseButton.addEventListener("click", async () => {
 // Sunucuya öğrenci ekleme
 async function addStudentToServer(courseName, studentNumber) {
     try {
-        const response = await fetch(`http://10.8.14.27:5000/api/courses/${courseName}/students`, {
+        const response = await fetch(`https://10.8.1.217:5000/api/courses/${courseName}/students`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -121,7 +121,7 @@ startAttendanceButton.addEventListener("click", async () => {
 
     // Rastgele bir dosya seçmek için 1 ile 25 arasında bir sayı üret
     const randomIndex = Math.floor(Math.random() * 25) + 1;
-    const audioFile = `audio/file${randomIndex}.mp3`;
+    const audioFile = `static/audio/file${randomIndex}.mp3`;
 
     // Seçilen dosyayı çal ve sunucuya bildir
     const audio = new Audio(audioFile);
@@ -140,7 +140,7 @@ startAttendanceButton.addEventListener("click", async () => {
         formData.append('audio', audioBlob, audioFile);
 
         // Sunucuya yoklama bilgisi gönder
-        const uploadResponse = await fetch('http://10.8.14.27:5000/api/attendance', {
+        const uploadResponse = await fetch('https://10.8.1.217:5000/api/attendance', {
             method: 'POST',
             body: formData
         });
