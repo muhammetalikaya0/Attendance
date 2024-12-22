@@ -1,6 +1,7 @@
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS  # Flask-CORS modülünü ekleyin
+from flask import send_from_directory
 
 app = Flask(__name__)
 CORS(app)  # Tüm rotalar için CORS'u etkinleştir
@@ -13,6 +14,15 @@ attendance_records = []  # Yoklama kayıtları
 @app.route('/')
 def index():
     return "Yoklama Sistemi Sunucusu Çalışıyor!"
+
+# Öğrenci arayüzü dosyasını sunma
+@app.route('/ogrenci.html')
+def serve_student_page():
+    return send_from_directory(os.path.dirname(os.path.abspath(__file__)), 'ogrenci.html')
+
+@app.route('/js/ogrenci.js')
+def serve_student_js():
+    return send_from_directory(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'js'), 'ogrenci.js')
 
 # Ders ekleme (Öğretmen)
 @app.route('/api/courses', methods=['POST'])
