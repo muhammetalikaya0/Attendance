@@ -18,11 +18,22 @@ def index():
 # Öğrenci arayüzü dosyasını sunma
 @app.route('/ogrenci.html')
 def serve_student_page():
-    return send_from_directory(os.path.dirname(os.path.abspath(__file__)), 'ogrenci.html')
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'ogrenci.html')
 
+# Öğretmen arayüzü dosyasını sunma
+@app.route('/ogretmen.html')
+def serve_teacher_page():
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'ogretmen.html')
+
+# Öğrenci JavaScript dosyasını sunma
 @app.route('/js/ogrenci.js')
 def serve_student_js():
-    return send_from_directory(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'js'), 'ogrenci.js')
+    return send_from_directory(os.path.join(app.root_path, 'static', 'js'), 'ogrenci.js')
+
+# Öğretmen JavaScript dosyasını sunma
+@app.route('/js/app.js')
+def serve_teacher_js():
+    return send_from_directory(os.path.join(app.root_path, 'static', 'js'), 'app.js')
 
 # Ders ekleme (Öğretmen)
 @app.route('/api/courses', methods=['POST'])
@@ -71,39 +82,38 @@ def get_student_courses(student_id):
 # Yoklama bilgisi ekleme (Öğretmen/Öğrenci)
 @app.route('/api/attendance', methods=['POST'])
 def record_attendance():
-    data = request.form
-    student_id = data.get('studentId')
+    data = request.get_json()
     course_name = data.get('course')
     week = data.get('week')
-    audio = request.files.get('audio')
+    audio_file = data.get('audioFile')
 
-    if not (student_id and course_name and week and audio):
+    if not (course_name and week and audio_file):
         return jsonify({"message": "Eksik bilgi gönderildi."}), 400
 
     if course_name not in courses:
         return jsonify({"message": "Ders bulunamadı."}), 404
 
-    # Ses dosyasını kaydet
-    audio_filename = f"{course_name}_week{week}_{audio.filename}"
-    audio.save(os.path.join("uploads", audio_filename))
+    # Ses dosyasının mevcut olup olmadığını kontrol et
+    audio_path = os.path.join("audio", audio_file)
+    if not os.path.exists(audio_path):
+        return jsonify({"message": f"Ses dosyası bulunamadı: {audio_file}"}), 404
 
-    # Simulate audio matching process (replace with real logic)
-    match_successful = True  # Bu kısım gerçek ses eşleştirme mantığı ile değiştirilmelidir
-
+    # Eşleşme başarılı kabul ediliyor
     attendance_record = {
-        "student_id": student_id,
         "course": course_name,
         "week": week,
-        "audioFile": audio_filename,
-        "matched": match_successful
+        "audioFile": audio_file,
+        "matched": True
     }
     attendance_records.append(attendance_record)
 
     # Dersin yoklama kayıtlarına ekle
     courses[course_name]["attendance"].append(attendance_record)
 
-    message = "Eşleşme başarılı! Yoklama alındı." if match_successful else "Eşleşme başarısız."
-    return jsonify({"message": message})
+    return jsonify({
+        "message": "Yoklama alındı.",
+        "details": f"Ses dosyası sunucuya iletildi: {audio_file}"
+    })
 
 # Ses dosyasını yükleme (Öğrenci)
 @app.route('/upload-audio', methods=['POST'])
@@ -112,11 +122,12 @@ def upload_audio():
         return jsonify({"status": "error", "message": "Ses dosyası bulunamadı"}), 400
 
     audio = request.files['audio']
-    upload_path = os.path.join("uploads", audio.filename)
-    os.makedirs("uploads", exist_ok=True)  # uploads klasörünü oluştur
+    upload_path = os.path.join("audio", audio.filename)
+    os.makedirs("audio", exist_ok=True)  # audio klasörünü oluştur
     audio.save(upload_path)  # Dosyayı kaydet
 
     return jsonify({"status": "success", "message": "Ses kaydı başarıyla alındı", "filePath": upload_path})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)  # 0.0.0.0 ile tüm IP'lerden erişime izin verir
+    context = ('cert.pem', 'key.pem')
+    app.run(host='0.0.0.0', port=5000, ssl_context=context)
