@@ -9,7 +9,7 @@ document.getElementById('fetchCourses').addEventListener('click', async () => {
 
     try {
         // Fetch courses from the server
-        const response = await fetch(`http://10.8.14.27:5000/api/students/${studentId}/courses`);
+        const response = await fetch(`https://10.8.1.217:5000/api/students/${studentId}/courses`);
         if (!response.ok) {
             throw new Error('Sunucudan ders bilgileri alınamadı.');
         }
@@ -42,53 +42,52 @@ document.getElementById('startListening').addEventListener('click', async () => 
         return;
     }
 
-    navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(stream => {
-            const mediaRecorder = new MediaRecorder(stream);
-            let audioChunks = [];
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream);
+        let audioChunks = [];
 
-            mediaRecorder.ondataavailable = event => {
-                audioChunks.push(event.data);
+        mediaRecorder.ondataavailable = event => {
+            audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            const reader = new FileReader();
+
+            reader.onloadend = async () => {
+                const base64Audio = reader.result.split(',')[1];
+
+                const response = await fetch('https://10.8.1.217:5000/api/attendance', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        audio: base64Audio,
+                        studentId: studentId,
+                        course: course,
+                        week: week
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Eşleşme işlemi sırasında bir hata oluştu.');
+                }
+
+                const data = await response.json();
+                document.getElementById('matchingStatus').textContent = data.message;
             };
 
-            mediaRecorder.onstop = async () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+        };
 
-                reader.onloadend = async () => {
-                    const base64Audio = reader.result.split(',')[1];
-
-                    const response = await fetch('http://10.8.14.27:5000/api/attendance', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            audio: base64Audio,
-                            studentId: studentId,
-                            course: course,
-                            week: week
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('Eşleşme işlemi sırasında bir hata oluştu.');
-                    }
-
-                    const data = await response.json();
-                    document.getElementById('matchingStatus').textContent = data.message;
-                };
-
-                reader.readAsDataURL(audioBlob);
-            };
-
-            mediaRecorder.start();
-            setTimeout(() => {
-                mediaRecorder.stop();
-            }, 5000);
-        })
-        .catch(error => {
-            console.error('Mikrofon erişim hatası:', error);
-            alert('Mikrofon erişiminde bir sorun oluştu.');
-        });
+        mediaRecorder.start();
+        setTimeout(() => {
+            mediaRecorder.stop();
+        }, 5000);
+    } catch (error) {
+        console.error('Mikrofon erişim hatası:', error);
+        alert('Mikrofon erişiminde bir sorun oluştu.');
+    }
 });
