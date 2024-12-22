@@ -9,7 +9,7 @@ document.getElementById('fetchCourses').addEventListener('click', async () => {
 
     try {
         // Fetch courses from the server
-        const response = await fetch(`http://127.0.0.1:5000/api/students/${studentId}/courses`);
+        const response = await fetch(`http://10.8.14.27:5000/api/students/${studentId}/courses`);
         if (!response.ok) {
             throw new Error('Sunucudan ders bilgileri alınamadı.');
         }
@@ -53,17 +53,22 @@ document.getElementById('startListening').addEventListener('click', async () => 
 
             mediaRecorder.onstop = async () => {
                 const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const reader = new FileReader();
 
-                const formData = new FormData();
-                formData.append('audio', audioBlob);
-                formData.append('studentId', studentId);
-                formData.append('course', course);
-                formData.append('week', week);
+                reader.onloadend = async () => {
+                    const base64Audio = reader.result.split(',')[1];
 
-                try {
-                    const response = await fetch('http://127.0.0.1:5000/api/attendance', {
+                    const response = await fetch('http://10.8.14.27:5000/api/attendance', {
                         method: 'POST',
-                        body: formData
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            audio: base64Audio,
+                            studentId: studentId,
+                            course: course,
+                            week: week
+                        })
                     });
 
                     if (!response.ok) {
@@ -72,10 +77,9 @@ document.getElementById('startListening').addEventListener('click', async () => 
 
                     const data = await response.json();
                     document.getElementById('matchingStatus').textContent = data.message;
-                } catch (error) {
-                    console.error('Eşleşme hatası:', error);
-                    alert('Ses eşleştirme sırasında bir hata oluştu.');
-                }
+                };
+
+                reader.readAsDataURL(audioBlob);
             };
 
             mediaRecorder.start();
