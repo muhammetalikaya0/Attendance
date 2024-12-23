@@ -105,6 +105,7 @@ addStudentButton.addEventListener("click", async () => {
 });
 
 // Yoklama başlatma
+// Yoklama başlatma
 startAttendanceButton.addEventListener("click", async () => {
     const selectedCourse = attendanceCourseSelect.value;
     const selectedWeek = weekSelect.value;
@@ -128,29 +129,8 @@ startAttendanceButton.addEventListener("click", async () => {
     try {
         await audio.play();
         alert(`${selectedCourse} için Hafta ${selectedWeek} yoklaması başlatıldı! Ses dosyası çalınıyor...`);
-
-        // Sunucuya çalınan dosya adını gönder
-        const response = await fetch('https://10.8.5.194:5000/api/attendance', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                course: selectedCourse,
-                week: selectedWeek,
-                audioFile: audioFile
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error("Sunucuya yoklama bilgisi gönderilirken bir hata oluştu.");
-        }
-
-        const result = await response.json();
-        alert(result.message);
-        console.log(`Yoklama bilgisi sunucuya gönderildi: ${selectedCourse}, Hafta ${selectedWeek}`);
     } catch (error) {
         console.error(error);
-        alert("Ses dosyası oynatılamadı veya yoklama bilgisi gönderilemedi: " + error.message);
+        alert("Ses dosyası oynatılamadı: " + error.message);
     }
 });
