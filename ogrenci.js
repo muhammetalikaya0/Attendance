@@ -56,41 +56,55 @@ document.getElementById('startListening').addEventListener('click', async () => 
             reader.onloadend = async () => {
                 const base64Audio = reader.result.split(',')[1];
 
-                const response = await fetch('/api/attendance', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        audio: base64Audio,
-                        studentId: studentId,
-                        course: course,
-                        week: week
-                    })
-                });
+                try {
+                    const response = await fetch('/api/attendance', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            audio: base64Audio,
+                            studentId: studentId,
+                            course: course,
+                            week: week
+                        })
+                    });
 
-                if (!response.ok) {
-                    throw new Error('Eşleşme işlemi sırasında bir hata oluştu.');
-                }
+                    const data = await response.json();
 
-                const data = await response.json();
-                if (data.matched) {
-                    alert('Ses eşleşmesi başarılı! Yoklama kaydedildi.');
-                } else {
-                    alert('Ses eşleşmesi başarısız. Lütfen tekrar deneyin.');
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Sunucu hatası oluştu');
+                    }
+
+                    if (data.matched) {
+                        alert('Yoklama başarıyla kaydedildi!');
+                    } else {
+                        alert('Yoklama kaydı başarısız oldu. Lütfen tekrar deneyin.');
+                    }
+                    
+                    if (document.getElementById('matchingStatus')) {
+                        document.getElementById('matchingStatus').textContent = data.message;
+                    }
+                } catch (error) {
+                    console.error('Sunucu hatası:', error);
+                    alert(`Hata: ${error.message}`);
                 }
-                document.getElementById('matchingStatus').textContent = data.message;
             };
 
             reader.readAsDataURL(audioBlob);
         };
 
+        // Kayıt başlat
         mediaRecorder.start();
+        alert('Ses kaydı başlatıldı. 5 saniye sonra otomatik olarak duracak.');
+        
+        // 5 saniye sonra kayıt durdur
         setTimeout(() => {
             mediaRecorder.stop();
-        }, 5000);
+            stream.getTracks().forEach(track => track.stop()); // Mikrofonu kapat
+        }, 10000);
     } catch (error) {
         console.error('Mikrofon erişim hatası:', error);
-        alert('Mikrofon erişiminde bir sorun oluştu.');
+        alert('Mikrofon erişiminde bir sorun oluştu. Lütfen mikrofon izinlerini kontrol edin.');
     }
 });
