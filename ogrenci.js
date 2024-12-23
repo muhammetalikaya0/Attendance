@@ -1,5 +1,3 @@
-// Updated ogrenci.js file to integrate student course fetching and attendance functionalities
-
 document.getElementById('fetchCourses').addEventListener('click', async () => {
     const studentId = document.getElementById('studentNumber').value.trim();
     if (!studentId) {
@@ -9,7 +7,7 @@ document.getElementById('fetchCourses').addEventListener('click', async () => {
 
     try {
         // Fetch courses from the server
-        const response = await fetch(`https://10.8.5.194:5000/api/students/${studentId}/courses`);
+        const response = await fetch(`/api/students/${studentId}/courses`);
         if (!response.ok) {
             throw new Error('Sunucudan ders bilgileri alınamadı.');
         }
@@ -58,7 +56,7 @@ document.getElementById('startListening').addEventListener('click', async () => 
             reader.onloadend = async () => {
                 const base64Audio = reader.result.split(',')[1];
 
-                const response = await fetch('https://10.8.5.194:5000/api/attendance', {
+                const response = await fetch('/api/attendance', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -76,6 +74,11 @@ document.getElementById('startListening').addEventListener('click', async () => 
                 }
 
                 const data = await response.json();
+                if (data.matched) {
+                    alert('Ses eşleşmesi başarılı! Yoklama kaydedildi.');
+                } else {
+                    alert('Ses eşleşmesi başarısız. Lütfen tekrar deneyin.');
+                }
                 document.getElementById('matchingStatus').textContent = data.message;
             };
 
