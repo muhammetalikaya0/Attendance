@@ -14,7 +14,7 @@ const startAttendanceButton = document.getElementById("startAttendance");
 // Sunucuya ders ekleme
 async function addCourseToServer(courseName) {
     try {
-        const response = await fetch('https://10.8.1.217:5000/api/courses', {
+        const response = await fetch('https://10.8.5.194:5000/api/courses', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -60,7 +60,7 @@ addCourseButton.addEventListener("click", async () => {
 // Sunucuya öğrenci ekleme
 async function addStudentToServer(courseName, studentNumber) {
     try {
-        const response = await fetch(`https://10.8.1.217:5000/api/courses/${courseName}/students`, {
+        const response = await fetch(`https://10.8.5.194:5000/api/courses/${courseName}/students`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -121,33 +121,33 @@ startAttendanceButton.addEventListener("click", async () => {
 
     // Rastgele bir dosya seçmek için 1 ile 25 arasında bir sayı üret
     const randomIndex = Math.floor(Math.random() * 25) + 1;
-    const audioFile = `static/audio/file${randomIndex}.mp3`;
+    const audioFile = `file${randomIndex}.mp3`;
 
-    // Seçilen dosyayı çal ve sunucuya bildir
-    const audio = new Audio(audioFile);
+    // Seçilen dosyayı çal
+    const audio = new Audio(`static/uploads/${audioFile}`);
     try {
         await audio.play();
         alert(`${selectedCourse} için Hafta ${selectedWeek} yoklaması başlatıldı! Ses dosyası çalınıyor...`);
 
-        // Ses dosyasını fetch ile yükle
-        const response = await fetch(audioFile);
-        const audioBlob = await response.blob();
-
-        // FormData ile ses dosyasını ve diğer bilgileri ekleyin
-        const formData = new FormData();
-        formData.append('course', selectedCourse);
-        formData.append('week', selectedWeek);
-        formData.append('audio', audioBlob, audioFile);
-
-        // Sunucuya yoklama bilgisi gönder
-        const uploadResponse = await fetch('https://10.8.1.217:5000/api/attendance', {
+        // Sunucuya çalınan dosya adını gönder
+        const response = await fetch('https://10.8.5.194:5000/api/attendance', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                course: selectedCourse,
+                week: selectedWeek,
+                audioFile: audioFile
+            })
         });
 
-        if (!uploadResponse.ok) {
+        if (!response.ok) {
             throw new Error("Sunucuya yoklama bilgisi gönderilirken bir hata oluştu.");
         }
+
+        const result = await response.json();
+        alert(result.message);
         console.log(`Yoklama bilgisi sunucuya gönderildi: ${selectedCourse}, Hafta ${selectedWeek}`);
     } catch (error) {
         console.error(error);
