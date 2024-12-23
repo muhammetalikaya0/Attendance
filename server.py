@@ -1,6 +1,6 @@
 import os
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # Flask-CORS modülünü ekleyin
+from flask_cors import CORS
 from flask import send_from_directory
 
 app = Flask(__name__)
@@ -94,7 +94,7 @@ def record_attendance():
         return jsonify({"message": "Ders bulunamadı."}), 404
 
     # Ses dosyasının mevcut olup olmadığını kontrol et
-    audio_path = os.path.join("audio", audio_file)
+    audio_path = os.path.join(app.root_path, 'static', 'uploads', audio_file)
     if not os.path.exists(audio_path):
         return jsonify({"message": f"Ses dosyası bulunamadı: {audio_file}"}), 404
 
@@ -111,7 +111,7 @@ def record_attendance():
     courses[course_name]["attendance"].append(attendance_record)
 
     return jsonify({
-        "message": "Yoklama alındı.",
+        "message": "Başarılı:",
         "details": f"Ses dosyası sunucuya iletildi: {audio_file}"
     })
 
@@ -122,8 +122,8 @@ def upload_audio():
         return jsonify({"status": "error", "message": "Ses dosyası bulunamadı"}), 400
 
     audio = request.files['audio']
-    upload_path = os.path.join("audio", audio.filename)
-    os.makedirs("audio", exist_ok=True)  # audio klasörünü oluştur
+    upload_path = os.path.join(app.root_path, 'static', 'uploads', audio.filename)
+    os.makedirs(os.path.dirname(upload_path), exist_ok=True)
     audio.save(upload_path)  # Dosyayı kaydet
 
     return jsonify({"status": "success", "message": "Ses kaydı başarıyla alındı", "filePath": upload_path})
