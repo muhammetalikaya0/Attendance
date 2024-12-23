@@ -9,7 +9,7 @@ document.getElementById('fetchCourses').addEventListener('click', async () => {
 
     try {
         // Fetch courses from the server
-        const response = await fetch(`https://10.8.1.217:5000/api/students/${studentId}/courses`);
+        const response = await fetch(`https://10.8.5.194:5000/api/students/${studentId}/courses`);
         if (!response.ok) {
             throw new Error('Sunucudan ders bilgileri alınamadı.');
         }
@@ -58,7 +58,7 @@ document.getElementById('startListening').addEventListener('click', async () => 
             reader.onloadend = async () => {
                 const base64Audio = reader.result.split(',')[1];
 
-                const response = await fetch('https://10.8.1.217:5000/api/attendance', {
+                const response = await fetch('https://10.8.5.194:5000/api/attendance', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
