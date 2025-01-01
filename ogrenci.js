@@ -1,110 +1,133 @@
-document.getElementById('fetchCourses').addEventListener('click', async () => {
-    const studentId = document.getElementById('studentNumber').value.trim();
-    if (!studentId) {
-        alert('Lütfen öğrenci numaranızı giriniz.');
-        return;
-    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Öğrenci Arayüzü - Yoklama Sistemi</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+background-color: rgb(255, 242, 184);
+color: rgb(20, 113, 33);
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+margin: 0;
+}
 
-    try {
-        // Fetch courses from the server
-        const response = await fetch(`/api/students/${studentId}/courses`);
-        if (!response.ok) {
-            throw new Error('Sunucudan ders bilgileri alınamadı.');
-        }
+.container {
+background-color: #fff;
+padding: 20px;
+border-radius: 8px;
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+width: 400px;
+}
 
-        const data = await response.json();
-        const courseSelect = document.getElementById('courseSelect');
-        courseSelect.innerHTML = '<option value="">Bir ders seçiniz</option>';
+h1 {
+text-align: center;
+font-size: 24px;
+margin-bottom: 20px;
+color: rgb(20, 113, 33);
+}
 
-        data.courses.forEach(course => {
-            const option = document.createElement('option');
-            option.value = course;
-            option.textContent = course;
-            courseSelect.appendChild(option);
-        });
+.form-group {
+margin-bottom: 15px;
+}
 
-        alert('Dersler başarıyla yüklendi.');
-    } catch (error) {
-        console.error('Dersleri getirme hatası:', error);
-        alert('Ders bilgileri alınırken bir sorun oluştu.');
-    }
-});
+label {
+display: block;
+font-weight: bold;
+margin-bottom: 5px;
+color: rgb(20, 113, 33);
+}
 
-document.getElementById('startListening').addEventListener('click', async () => {
-    const studentId = document.getElementById('studentNumber').value.trim();
-    const course = document.getElementById('courseSelect').value;
-    const week = document.getElementById('weekSelect').value;
+input, select, button {
+width: 100%;
+padding: 10px;
+font-size: 16px;
+margin-top: 5px;
+border: 1px solid #ccc;
+border-radius: 4px;
+}
 
-    if (!studentId || !course || !week) {
-        alert('Lütfen öğrenci numarası, ders ve hafta seçimini tamamlayınız.');
-        return;
-    }
+button {
+background-color: rgb(20, 113, 33);
+color: white;
+cursor: pointer;
+border: none;
+}
 
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const mediaRecorder = new MediaRecorder(stream);
-        let audioChunks = [];
+button:hover {
+background-color: #0056b3;
+}
 
-        mediaRecorder.ondataavailable = event => {
-            audioChunks.push(event.data);
-        };
+.status {
+margin-top: 20px;
+text-align: center;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Öğrenci Ekranı</h1>
 
-        mediaRecorder.onstop = async () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-            const reader = new FileReader();
+<!-- Öğrenci Numarası Girme -->
+<div class="form-group">
+<label for="studentNumber">Öğrenci Numarası:</label>
+<input type="text" id="studentNumber" placeholder="Öğrenci numaranızı giriniz">
+<button id="fetchCourses">Dersleri Getir</button>
+</div>
 
-            reader.onloadend = async () => {
-                const base64Audio = reader.result.split(',')[1];
+<!-- Ders Seçimi -->
+<div class="form-group">
+<label for="courseSelect">Ders Seçimi:</label>
+<select id="courseSelect">
+<option value="">Ders seçmek için öğrenci numaranızı giriniz</option>
+</select>
+</div>
 
-                try {
-                    const response = await fetch('/api/attendance', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            audio: base64Audio,
-                            studentId: studentId,
-                            course: course,
-                            week: week
-                        })
-                    });
+<!-- Hafta Seçimi -->
+<div class="form-group">
+<label for="weekSelect">Hafta Seçimi:</label>
+<select id="weekSelect">
+<option value="">Bir hafta seçiniz</option>
+<option value="1">Hafta 1</option>
+<option value="2">Hafta 2</option>
+<option value="3">Hafta 3</option>
+<option value="4">Hafta 4</option>
+<option value="5">Hafta 5</option>
+<option value="6">Hafta 6</option>
+<option value="7">Hafta 7</option>
+<option value="8">Hafta 8</option>
+<option value="9">Hafta 9</option>
+<option value="10">Hafta 10</option>
+<option value="11">Hafta 11</option>
+<option value="12">Hafta 12</option>
+<option value="13">Hafta 13</option>
+<option value="14">Hafta 14</option>
+</select>
+</div>
 
-                    const data = await response.json();
+<!-- Yoklama Durumu -->
+<div class="form-group">
+<label for="attendanceStatus">Yoklama Durumu:</label>
+<p id="attendanceStatus">Yoklama başlamadı.</p>
+</div>
 
-                    if (!response.ok) {
-                        throw new Error(data.message || 'Sunucu hatası oluştu');
-                    }
+<!-- Ses Dinleme -->
+<div class="form-group">
+<label for="audioInput">Ses Dinleme:</label>
+<button id="startListening">Dinlemeye Başla</button>
+</div>
 
-                    if (data.matched) {
-                        alert('Yoklama başarıyla kaydedildi!');
-                    } else {
-                        alert('Yoklama kaydı başarısız oldu. Lütfen tekrar deneyin.');
-                    }
-                    
-                    if (document.getElementById('matchingStatus')) {
-                        document.getElementById('matchingStatus').textContent = data.message;
-                    }
-                } catch (error) {
-                    console.error('Sunucu hatası:', error);
-                    alert(`Hata: ${error.message}`);
-                }
-            };
+<div class="status">
+<p id="matchingStatus">Eşleşme bekleniyor...</p>
+</div>
+</div>
 
-            reader.readAsDataURL(audioBlob);
-        };
+<div id="timer"></div>
 
-        // Kayıt başlat
-        mediaRecorder.start();
-        alert('Ses kaydı başlatıldı. 5 saniye sonra otomatik olarak duracak.');
-        
-        // 5 saniye sonra kayıt durdur
-        setTimeout(() => {
-            mediaRecorder.stop();
-            stream.getTracks().forEach(track => track.stop()); // Mikrofonu kapat
-        }, 10000);
-    } catch (error) {
-        console.error('Mikrofon erişim hatası:', error);
-        alert('Mikrofon erişiminde bir sorun oluştu. Lütfen mikrofon izinlerini kontrol edin.');
-    }
-});
+<script src="js/ogrenci.js"></script>
+</body>
+</html>
