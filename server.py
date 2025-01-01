@@ -61,32 +61,54 @@ attendance_records = []
 @app.route('/api/report', methods=['GET'])
 def get_report():
     try:
-        # Query parametrelerini al
         course_name = request.args.get('course')
-        week = request.args.get('week')  # string olarak bırak
+        week = request.args.get('week')
         
         print(f"DEBUG: Rapor isteniyor - Ders: {course_name}, Hafta: {week}")
-        print("DEBUG: Mevcut tüm kayıtlar:", attendance_records)
         
-        # İlgili dersin yoklama kayıtlarını filtrele
-        filtered_records = []
-        for record in attendance_records:
-            if (record.get('course') == course_name and 
-                str(record.get('week')) == str(week)):
-                # Veri formatını düzelt
-                filtered_record = {
-                    'student': record.get('studentId'),  # studentId'yi student'a çevir
-                    'course': record.get('course'),
-                    'week': record.get('week'),
-                    'timestamp': record.get('timestamp', datetime.now().isoformat()),
-                    'matched': bool(record.get('matched')),  # np.True_ -> bool
-                    'similarity': float(record.get('similarity', 0))  # float'a çevir
+        # Önce o derse kayıtlı tüm öğrencileri al
+        if course_name not in courses:
+            return jsonify([]), 404
+            
+        enrolled_students = courses[course_name]["students"]
+        
+        # Her kayıtlı öğrenci için bir kayıt oluştur
+        all_records = []
+        for student_id in enrolled_students:
+            # Öğrencinin bu hafta için kaydını bul
+            student_record = None
+            for record in attendance_records:
+                if (record.get('course') == course_name and 
+                    str(record.get('week')) == str(week) and 
+                    record.get('studentId') == student_id):
+                    student_record = record
+                    break
+            
+            # Eğer kayıt yoksa, gelmemiş olarak işaretle
+            if student_record is None:
+                student_record = {
+                    'student': student_id,
+                    'course': course_name,
+                    'week': week,
+                    'timestamp': datetime.now().isoformat(),
+                    'matched': False,
+                    'similarity': 0.0
                 }
-                filtered_records.append(filtered_record)
+            else:
+                # Varolan kaydı düzenle
+                student_record = {
+                    'student': student_record.get('studentId'),
+                    'course': student_record.get('course'),
+                    'week': student_record.get('week'),
+                    'timestamp': student_record.get('timestamp', datetime.now().isoformat()),
+                    'matched': bool(student_record.get('matched')),
+                    'similarity': float(student_record.get('similarity', 0))
+                }
+                
+            all_records.append(student_record)
         
-        print(f"DEBUG: Filtrelenmiş kayıtlar: {filtered_records}")
-        
-        return jsonify(filtered_records)
+        print(f"DEBUG: Tüm kayıtlar: {all_records}")
+        return jsonify(all_records)
     
     except Exception as e:
         print(f"Error in get_report: {str(e)}")
@@ -155,7 +177,7 @@ def compare_audio_files(file1, file2):
             y, sr = librosa.load(file_path, sr=None)
             
             # Ses seviyesi kontrolü
-            if np.abs(y).mean() < 0.001:
+            if np.abs(y).mean() < 0.02:
                 print(f"DEBUG: Çok düşük ses seviyesi: {file_path}")
                 return None
 
